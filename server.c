@@ -15,6 +15,8 @@ int main() {
   int s, c;
   socklen_t addr_len;
   struct sockaddr_in srv, cli;
+  char buff[256];
+  char *data;
 
   addr_len = 0;
 
@@ -33,15 +35,32 @@ int main() {
 
   if (bind(s, (struct sockaddr *)&srv, sizeof(srv))) {
     printf("bind()\n");
+    close(s);
     return EXIT_FAILURE;
   }
 
   if (listen(s, 5)) {
     printf("listen() failed\n");
+    close(s);
+    return EXIT_FAILURE;
+  }
+  printf("Listening on 0.0.0.0:%d \n", PORT);
+
+  c = accept(s, (struct sockaddr *)&srv, &addr_len);
+
+  if (c < 0) {
+    printf("accept() failed\n");
     return EXIT_FAILURE;
   }
 
-  accept(s, (struct sockaddr *)&srv, &addr_len);
+  printf("Client connected.\n");
+
+  data = "http v1.0\n";
+  read(c, buff, 255);
+  write(c, data, strlen(data));
+
+  close(c);
+  close(s);
 
   return EXIT_SUCCESS;
 }
